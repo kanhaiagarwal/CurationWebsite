@@ -1,0 +1,56 @@
+/*********************************
+        General Styles
+*********************************/
+html {
+    box-sizing: border-box;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+.video-list li {
+    margin-top: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid gray;
+}
+
+.main {
+    margin: 20px auto;
+    max-width: 200px;
+}
+
+/*********************************
+        Header Styles
+*********************************/
+.main-dropdown {
+    margin: 10px;
+}
+
+/*********************************
+        Video List Styles
+*********************************/
+
+.video-body {
+    margin-left: 20px;
+}
+
+.approve-video {
+    display: inline-block;
+    float: right;
+    margin: 10px;
+}
+
+.reject-video {
+    display: inline-block;
+    float: right;
+    margin: 10px;
+}
+
+/*********************************
+        Approve Modal Styles
+*********************************/
+.approve-dropdown {
+    display: inline-block;
+    margin: 10px;
+}

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Curation | Home</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="css/curator.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+    <script src="js/curator.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="page-header main">
+        <span class="dropdown main-dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="category-dropdown-button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            </button>
+            <div class="dropdown-menu" id="category-dropdown-items" aria-labelledby="dropdownMenuButton"></div>
+        </span>
+
+        <span class="dropdown main-dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="channels-dropdown-button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            </button>
+            <div class="dropdown-menu" id="channel-dropdown-items" aria-labelledby="dropdownMenuButton"></div>
+        </span>
+    </div>
+
+    <div class="container">
+        <ul class="media-list video-list">
+            <li class="media">
+                <a class="pull-left" href="#bannerformodal" data-toggle="modal" data-target="#youtubeModal">
+                    <img class="media-object" src="https://i.ytimg.com/vi/EFg21zta1Ws/default.jpg"
+                        alt="Generic placeholder image">
+                </a>
+                <div class="media-body video-body">
+                    <h4 class="media-heading">That one friend who sings all songs confidently with wrong lyrics :PART 2
+                        ENGLISH SONGS</h4>
+                    <div>
+                        <span><b>Publish Date: </b>May 01 2017</span>
+                        <span class="reject-video"><button class="btn btn-danger" data-toggle="modal"
+                                data-target="#removeVideoModal">Reject</button></span>
+                        <span class="approve-video"><button class="btn btn-success" data-toggle="modal"
+                                data-target="#approveVideoModal">Approve</button></span>
+                    </div>
+                    <div><b>Channel: </b>ashish chanchlani vines</div>
+                    <div><b>View Count: </b>6479038</div>
+                </div>
+            </li>
+            <li class="media">
+                <a class="pull-left" href="#bannerformodal" data-toggle="modal" data-target="#youtubeModal">
+                    <img class="media-object" src="https://i.ytimg.com/vi/EFg21zta1Ws/default.jpg"
+                        alt="Generic placeholder image">
+                </a>
+                <div class="media-body video-body">
+                    <h4 class="media-heading">That one friend who sings all songs confidently with wrong lyrics :PART 2
+                        ENGLISH SONGS</h4>
+                    <div>
+                        <span><b>Publish Date: </b>May 01 2017</span>
+                        <span class="reject-video"><button class="btn btn-danger" data-toggle="modal"
+                                data-target="#removeVideoModal">Reject</button></span>
+                        <span class="approve-video"><button class="btn btn-success" data-toggle="modal"
+                                data-target="#approveVideoModal">Approve</button></span>
+                    </div>
+                    <div><b>Channel: </b>ashish chanchlani vines</div>
+                    <div><b>View Count: </b>6479038</div>
+                </div>
+            </li>
+            <li class="media">
+                <a class="pull-left" href="#bannerformodal" data-toggle="modal" data-target="#youtubeModal">
+                    <img class="media-object" src="https://i.ytimg.com/vi/EFg21zta1Ws/default.jpg"
+                        alt="Generic placeholder image">
+                </a>
+                <div class="media-body video-body">
+                    <h4 class="media-heading">That one friend who sings all songs confidently with wrong lyrics :PART 2
+                        ENGLISH SONGS</h4>
+                    <div>
+                        <span><b>Publish Date: </b>May 01 2017</span>
+                        <span class="reject-video"><button class="btn btn-danger" data-toggle="modal"
+                                data-target="#removeVideoModal">Reject</button></span>
+                        <span class="approve-video"><button class="btn btn-success" data-toggle="modal"
+                                data-target="#approveVideoModal">Approve</button></span>
+                    </div>
+                    <div><b>Channel: </b>ashish chanchlani vines</div>
+                    <div><b>View Count: </b>6479038</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Show Video Modal -->
+    <div class="modal fade" id="youtubeModal" tabindex="-1" role="dialog" aria-labelledby="youtubeModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">That one friend who sings all songs confidently with wrong lyrics :PART 2
+                        ENGLISH SONGS</h5>
+                </div>
+                <iframe id="modal-video" width="560" height="315" src="https://www.youtube.com/embed/EFg21zta1Ws"
+                    frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove Video Modal -->
+    <div class="modal fade" id="removeVideoModal" tabindex="-1" role="dialog" aria-labelledby="removeVideoModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Are you sure you want to remove the video from the Curation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger">Remove Video</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approve Video Modal -->
+    <div class="modal fade" id="approveVideoModal" tabindex="-1" role="dialog" aria-labelledby="approveVideoModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Approve the Video</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Language Dropdown in the Approve Modal -->
+                    <span class="dropdown approve-dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button"
+                            id="approve-language-dropdown-button" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                        </button>
+                        <div class="dropdown-menu" id="approve-language-dropdown-items"
+                            aria-labelledby="dropdownMenuButton"></div>
+                    </span>
+
+                    <!-- Category Dropdown in the Approve Modal -->
+                    <span class="dropdown approve-dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button"
+                            id="approve-category-dropdown-button" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                        </button>
+                        <div class="dropdown-menu" id="approve-category-dropdown-items"
+                            aria-labelledby="dropdownMenuButton"></div>
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success">Approve Video</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
