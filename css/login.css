@@ -12,6 +12,7 @@ html {
 body {
     font-family: "Poppins", sans-serif;
     height: 100vh;
+    background: black;
 }
 
 a {
@@ -36,6 +37,7 @@ h2 {
 /* STRUCTURE */
 
 .wrapper {
+    background: black;
     display: flex;
     align-items: center;
     flex-direction: column; 
