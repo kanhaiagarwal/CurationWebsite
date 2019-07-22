@@ -4,9 +4,7 @@ var apiUrl = 'https://1iisrt638h.execute-api.ap-southeast-1.amazonaws.com/beta'
 
 $(document).ready(function () {
 
-    $.cookie('fosho_user_name', 'rishabh')
-
-    if (!$.session.get('fosho_type') || $.session.get('fosho_type') != "curator") {
+    if (!$.session.get('fosho_type') || $.session.get('fosho_type') != "admin") {
         console.log("The user is not admin.")
         window.location.replace("index.html")
     }
@@ -29,7 +27,7 @@ $(document).ready(function () {
         SPORTS: [], LIFESTYLE: [], FITNESS: [], FILMLET: [], MEMES: []
     }
 
-    const categories = {
+    var categories = {
         STANDUPS: 2, DESI: 3, TRAILERS: 4, FUNNY: 5, CHILL: 6, ANIMATION: 7, EXPLORE: 8, TRIPPY: 9, LEARN: 10, SPORTS: 11,
         LIFESTYLE: 12, FITNESS: 13, FILMLET: 14, MEMES: 15
     }
@@ -53,12 +51,11 @@ $(document).ready(function () {
         $("#category-" + category).click(function (event) {
             console.log("event.target.value in category click:", event.target.value)
             selectedCategory = event.target.value
-            let currentCategory = event.target.value
+            var currentCategory = event.target.value
             if (videos[currentCategory].length == 0) {
-                getUncuratedVideosFromRemote(selectedCategory)
+                getCuratedVideosFromRemote(selectedCategory)
             } else {
                 populateVideosInListView(selectedCategory, true)
-                populateChannelsInDropdown(selectedCategory, true)
             }
         })
     })
@@ -73,13 +70,13 @@ $(document).ready(function () {
         )
     })
 
-    function getUncuratedVideosFromRemote(category) {
-        let categoryToFetch = category
+    function getCuratedVideosFromRemote(category) {
+        var categoryToFetch = category
         if (!categoryToFetch) {
             categoryToFetch = selectedCategory
         }
         $.ajax({
-            url: apiUrl + '/getuncuratedvideos?category=' + categories[categoryToFetch],
+            url: apiUrl + '/getcuratedvideos?category=' + categories[categoryToFetch],
             type: 'GET',
             dataType: 'json',
             contentType: 'application/json',
@@ -88,7 +85,6 @@ $(document).ready(function () {
                 if (data && data.result && data.result.videos && data.result.videos.length > 0
                     && data.result.channels && data.result.channels.length > 0 && data.result.videos[0] != null) {
                     for (var videoIndex = 0; videoIndex < data.result.videos.length; videoIndex++) {
-                        console.log("videoIndex:", videoIndex)
                         addVideoInVideosMap(data.result.videos[videoIndex], categoryToFetch)
                     }
                     for (var channelIndex = 0; channelIndex < data.result.channels.length; channelIndex++) {
@@ -106,7 +102,6 @@ $(document).ready(function () {
                 }
 
                 populateVideosInListView(categoryToFetch, true)
-                populateChannelsInDropdown(categoryToFetch, true)
             },
             error: function (error) {
                 alert("Please reload the page.")
@@ -116,35 +111,17 @@ $(document).ready(function () {
 
     function addVideoInVideosMap(videoItem, category) {
         if (!videosCatalogue[videoItem['id']]) {
-            videoItem['categories'] = []
-            videoItem['categories'].push(category)
             videosCatalogue[videoItem['id']] = videoItem
-        } else if (videosCatalogue[videoItem['id']] && videosCatalogue[videoItem['id']]['categories']
-            && videosCatalogue[videoItem['id']]['categories'].indexOf(category) < 0) {
-            videosCatalogue[videoItem['id']]['categories'].push(category)
-
-        } else if (videosCatalogue[videoItem['id']] && !videosCatalogue[videoItem['id']]['categories']) {
-            videosCatalogue[videoItem['id']]['categories'] = []
-            videosCatalogue[videoItem['id']]['categories'].push(category)
         }
     }
 
     function addChannelInChannelsMap(channelItem, category) {
         if (!channelsCatalogue[channelItem['id']]) {
-            channelItem['categories'] = []
-            channelItem['categories'].push(category)
             channelsCatalogue[channelItem['id']] = channelItem
-        } else if (channelsCatalogue[channelItem['id']] && channelsCatalogue[channelItem['id']]['categories']
-            && channelsCatalogue[channelItem['id']]['categories'].indexOf(category) < 0) {
-            channelsCatalogue[channelItem['id']]['categories'].push(category)
-
-        } else if (channelsCatalogue[channelItem['id']] && !channelsCatalogue[channelItem['id']]['categories']) {
-            channelsCatalogue[channelItem['id']]['categories'] = []
-            channelsCatalogue[channelItem['id']]['categories'].push(category)
         }
     }
 
-    getUncuratedVideosFromRemote()
+    getCuratedVideosFromRemote()
 
     $('#category-dropdown-items a').click(function (event) {
         $('#category-dropdown-button').text(event.target.value)
@@ -180,6 +157,12 @@ $(document).ready(function () {
         var videoId = relatedElement.data('video-id')
         console.log("videoId:", videoId)
         $('#btn-approve-modal-approve-video').data('video-id', videoId)
+        $('#approve-category-dropdown-button').text(selectedCategory)
+        $('#approve-category-dropdown-button').data('selectedCategory', selectedCategory)
+        if (videosCatalogue[videoId] && videosCatalogue[videoId]['language']) {
+            $('#approve-language-dropdown-button').text(videosCatalogue[videoId]['language'])
+            $('#approve-language-dropdown-button').data('selectedLanguage', videosCatalogue[videoId]['language'])
+        }
     })
 
     /** Event when the reject-video modal is shown. */
@@ -191,6 +174,40 @@ $(document).ready(function () {
         $('#btn-reject-modal-reject-video').data('video-id', videoId)
     })
 
+    /** Event when the injestion pipeline modal is shown. */
+    $('#injesion-pipeline-modal').on('show.bs.modal', function (event) {
+        console.log("Injestion Pipeline modal is opened.")
+
+        $.ajax({
+            url: apiUrl + '/getverifiedcuratedvideoscount',
+            type: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            crossDomain: true,
+            success: function (response) {
+                if (response.statusCode == 200 && response.result && response.result.success) {
+                    var categoriesCount = response.result.categoriesCount
+                    $('#injestion-pipeline-table').empty()
+                    var thead = $('<thead>').addClass('thead-dark')
+                    var headRow = $('<tr>').append($('<th/>').attr('scope', "col").html("Category")).append($('<th/>').attr('scope', "col").html("Number Of Videos"))
+                    thead.append(headRow)
+                    $('#injestion-pipeline-table').append(thead)
+                    Object.keys(categories).forEach(function (category) {
+                        var categoryCount = categoriesCount[String(categories[category])]
+                        var row = $('<tr>').append($('<td/>').attr('scope', "row").html(category)).append($('<td/>').attr('scope', "col").html(categoryCount))
+                        $('#injestion-pipeline-table').append(row)
+                    })
+                    console.log("response.result.categoriesCount:", response.result.categoriesCount)
+                }
+
+            },
+            error: function (event) {
+
+            }
+        })
+    })
+
+    /** Event when the approve button in the approve modal is clicked. */
     $('#btn-approve-modal-approve-video').click(function (event) {
         console.log("$(this).data('video-id'):", $(this).data('video-id'))
         console.log("selectedCategory:", $('#approve-category-dropdown-button').data('selectedCategory'))
@@ -198,7 +215,7 @@ $(document).ready(function () {
         var videoIdInApproveModal = $(this).data('video-id')
 
         $.post({
-            url: apiUrl + '/addincuratedlist',
+            url: apiUrl + '/modifyincuratedlist',
             dataType: 'json',
             contentType: 'application/json',
             crossDomain: true,
@@ -206,8 +223,7 @@ $(document).ready(function () {
                 'videoId': $(this).data('video-id'),
                 'channelId': getChannelIdForVideo($(this).data('video-id'), selectedCategory),
                 'category': categories[$('#approve-category-dropdown-button').data('selectedCategory')],
-                'language': $('#approve-language-dropdown-button').data('selectedLanguage'),
-                'userCurated': $.session('fosho_username')
+                'language': $('#approve-language-dropdown-button').data('selectedLanguage')
             }),
             success: function (response) {
                 console.log("Response:", JSON.stringify(response))
@@ -217,7 +233,6 @@ $(document).ready(function () {
                     console.log("response added is true")
                     removeVideoFromAllCategories(videoIdInApproveModal)
                     populateVideosInListView(selectedCategory, true)
-                    populateChannelsInDropdown(selectedCategory, true)
                 }
                 $('#approveVideoModal').modal('hide')
 
@@ -249,6 +264,7 @@ $(document).ready(function () {
         })
     })
 
+    /** Event when the reject button in the reject modal is clicked. */
     $('#btn-reject-modal-reject-video').click(function (event) {
         var videoIdInRejectModal = $(this).data('video-id')
         console.log("$(this).data('video-id'):", $(this).data('video-id'))
@@ -272,7 +288,6 @@ $(document).ready(function () {
                     console.log("response deleted is true")
                     removeVideoFromAllCategories(videoIdInRejectModal)
                     populateVideosInListView(selectedCategory, true)
-                    populateChannelsInDropdown(selectedCategory, true)
                 }
                 $('#removeVideoModal').modal('hide')
                 if (response.statusCode == 200 && response.result && response.result.deleted) {
@@ -300,6 +315,52 @@ $(document).ready(function () {
                     delay: 2000
                 })
             }
+        })
+    })
+
+    $('#btn-start-injestion-pipeline').click(function (event) {
+        $.post({
+            url: apiUrl + '/startinjestionpipeline',
+            dataType: 'json',
+            contentType: 'application/json',
+            crossDomain: true,
+            success: function (response) {
+                $('#injesion-pipeline-modal').modal('hide')
+                if (response && response.statusCode && response.statusCode == 200 && response.result && response.result.added) {
+                    console.log("injestion pipeline ran successfully.")
+                    $('#injesion-pipeline-modal').modal('hide')
+                    $.toast({
+                        title: "Injestion Pipeline Started",
+                        content: response.result.message,
+                        type: "success",
+                        delay: 2000
+                    })
+                } else if (response && response.statusCode && response.statusCode == 200 && response.result) {
+                    $.toast({
+                        title: "Error in Starting the Injestion Pipeline",
+                        content: response.result.message,
+                        type: "error",
+                        delay: 2000
+                    })
+                } else {
+                    $.toast({
+                        title: "Error in Starting the Injestion Pipeline",
+                        type: "error",
+                        delay: 2000
+                    })
+                }
+            },
+            error: function (error) {
+                console.log("Error in the start pipeline API:", error)
+                $('#injesion-pipeline-modal').modal('hide')
+                $('#injesion-pipeline-modal').modal('hide')
+                $.toast({
+                    title: "Error in Starting the Injestion Pipeline",
+                    type: "error",
+                    delay: 2000
+                })
+            }
+
         })
     })
 
@@ -336,18 +397,14 @@ $(document).ready(function () {
         delete videosCatalogue[videoId]
     }
 
-    function populateVideosInListView(category, removeAllElements, channelFilter) {
+    function populateVideosInListView(category, removeAllElements) {
 
         var categoryVideos
         if (removeAllElements) {
             $('.video-list').empty()
         }
 
-        if (channelFilter) {
-            categoryVideos = getVideosWithChannelFilter(category, channelFilter)
-        } else {
-            categoryVideos = videos[category]
-        }
+        categoryVideos = videos[category]
 
         for (var videoIndex = 0; videoIndex < categoryVideos.length; videoIndex++) {
             var videoItem = categoryVideos[videoIndex]
@@ -385,54 +442,5 @@ $(document).ready(function () {
             var listElement = $('<li />').addClass('media').append(thumbnail).append(listBodyDiv)
             $('.video-list').append(listElement)
         }
-    }
-
-    function getVideosWithChannelFilter(category, channelFilter) {
-        var allCategoryVideos = videos[category]
-        var filteredVideos = []
-
-        for (var videoIndex = 0; videoIndex < allCategoryVideos.length; videoIndex++) {
-            if (allCategoryVideos[videoIndex]['channelId'] == channelFilter) {
-                filteredVideos.push(allCategoryVideos[videoIndex])
-            }
-        }
-
-        return filteredVideos
-    }
-
-    function populateChannelsInDropdown(category, removeAllElements) {
-
-        var categoryChannels = channels[category]
-
-        if (removeAllElements) {
-            $('#channels-dropdown-items').empty()
-            $('#channels-dropdown-items').append($('<a />').val('no-selection').attr('id', 'channel-no-selection').text('##No Channel Filter'))
-            $('#channels-dropdown-items').append($('<div />').addClass('dropdown-divider'))
-            $('#channels-dropdown-button').text('##No Channel Filter')
-        }
-
-        for (var channelIndex = 0; channelIndex < categoryChannels.length; channelIndex++) {
-            var channelItem = categoryChannels[channelIndex]
-            var channelTitle = channelItem['title']
-            var channelId = channelItem['id']
-
-            if (channelIndex == 0 && !removeAllElements) {
-                $('#channels-dropdown-button').text(channelTitle)
-            }
-
-            $('#channels-dropdown-items')
-                .append($('<a>').val(channelId).text(channelTitle).addClass('dropdown-item').attr('id', 'channel-' + channelId))
-                .attr('data-channel-name', channelTitle)
-
-            $('#channel-' + channelId).click(function (event) {
-                $('#channels-dropdown-button').text(event.target.text)
-                populateVideosInListView(selectedCategory, true, event.target.value)
-            })
-        }
-
-        $('#channel-no-selection').click(function () {
-            $('#channels-dropdown-button').text('##No Channel Filter')
-            populateVideosInListView(selectedCategory, true)
-        })
     }
 })

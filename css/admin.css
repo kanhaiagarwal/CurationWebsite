@@ -27,6 +27,11 @@ html {
     margin: 10px;
 }
 
+.injestion-pipeline {
+    display: inline-block;
+    right: 50px;   
+}
+
 .logout-container {
     position: absolute;
     top: 10px;
@@ -38,6 +43,7 @@ html {
     top: 10px;
     left: 10px;
 }
+
 /*********************************
         Video List Styles
 *********************************/

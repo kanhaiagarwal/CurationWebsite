@@ -2,10 +2,10 @@
 <html>
 
 <head>
-    <title>Curation | Home</title>
+    <title>Admin | Home</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link href="css/curator.css" rel="stylesheet">
+    <link href="css/admin.css" rel="stylesheet">
     <link href="css/toast.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
@@ -18,7 +18,7 @@
     <script src="js/jquerysession.js"></script>
     <script src="js/cookies.js"></script>
     <script src="js/toast.min.js"></script>
-    <script src="js/curator.js"></script>
+    <script src="js/admin.js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -26,7 +26,6 @@
 
 <body>
     <div class="page-header main">
-
         <!-- User Name -->
         <span class="user-title">
         </span>
@@ -39,15 +38,14 @@
             <div class="dropdown-menu" id="category-dropdown-items" aria-labelledby="dropdownMenuButton"></div>
         </span>
 
-        <!-- Channel Dropdown -->
-        <span class="dropdown main-dropdown">
-            <button class="btn btn-primary dropdown-toggle" type="button" id="channels-dropdown-button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            </button>
-            <div class="dropdown-menu" id="channels-dropdown-items" aria-labelledby="dropdownMenuButton"></div>
+        <!-- Injestion Pipeline Button -->
+        <span class="injestion-pipeline">
+            <button class="btn btn-warning" aria-labelledby="injestion-pipeline-modal-label" data-toggle="modal"
+                data-target="#injesion-pipeline-modal">Start Injestion
+                pipeline</button>
         </span>
 
-        <!-- Logout -->
+        <!-- Logout Button -->
         <span class="logout-container">
             <button class="btn btn-secondary" aria-labelledBy="logout-modal-label" data-toggle="modal"
                 data-target="#logout-modal">Logout</button>
@@ -56,66 +54,6 @@
 
     <div class="container">
         <ul class="media-list video-list">
-            <!-- <li class="media">
-                <a class="pull-left" href="#bannerformodal" data-toggle="modal" data-target="#youtubeModal">
-                    <img class="media-object" src="https://i.ytimg.com/vi/EFg21zta1Ws/default.jpg"
-                        alt="Generic placeholder image">
-                </a>
-                <div class="media-body video-body">
-                    <h4 class="media-heading" data-toggle="modal" data-target="#youtubeModal">That one friend who sings
-                        all songs confidently with wrong lyrics :PART 2
-                        ENGLISH SONGS</h4>
-                    <div>
-                        <span><b>Publish Date: </b>May 01 2017</span>
-                        <button class="btn btn-danger reject-video" data-toggle="modal"
-                            data-target="#removeVideoModal">Reject</button>
-                        <button class="btn btn-success approve-video" data-toggle="modal"
-                            data-target="#approveVideoModal">Approve</button>
-                    </div>
-                    <div><b>Channel: </b>ashish chanchlani vines</div>
-                    <div><b>View Count: </b>6479038</div>
-                </div>
-            </li>
-            <li class="media">
-                <a class="pull-left" href="#bannerformodal" data-toggle="modal" data-target="#youtubeModal">
-                    <img class="media-object" src="https://i.ytimg.com/vi/EFg21zta1Ws/default.jpg"
-                        alt="Generic placeholder image">
-                </a>
-                <div class="media-body video-body">
-                    <h4 class="media-heading" data-toggle="modal" data-target="#youtubeModal">That one friend who sings
-                        all songs confidently with wrong lyrics :PART 2
-                        ENGLISH SONGS</h4>
-                    <div>
-                        <span><b>Publish Date: </b>May 01 2017</span>
-                        <button class="btn btn-danger reject-video" data-toggle="modal"
-                            data-target="#removeVideoModal">Reject</button>
-                        <button class="btn btn-success approve-video" data-toggle="modal"
-                            data-target="#approveVideoModal">Approve</button>
-                    </div>
-                    <div><b>Channel: </b>ashish chanchlani vines</div>
-                    <div><b>View Count: </b>6479038</div>
-                </div>
-            </li>
-            <li class="media">
-                <a class="pull-left" href="#bannerformodal" data-toggle="modal" data-target="#youtubeModal">
-                    <img class="media-object" src="https://i.ytimg.com/vi/EFg21zta1Ws/default.jpg"
-                        alt="Generic placeholder image">
-                </a>
-                <div class="media-body video-body">
-                    <h4 class="media-heading" data-toggle="modal" data-target="#youtubeModal">That one friend who sings
-                        all songs confidently with wrong lyrics :PART 2
-                        ENGLISH SONGS</h4>
-                    <div>
-                        <span><b>Publish Date: </b>May 01 2017</span>
-                        <button class="btn btn-danger reject-video" data-toggle="modal"
-                            data-target="#removeVideoModal">Reject</button>
-                        <button class="btn btn-success approve-video" data-toggle="modal"
-                            data-target="#approveVideoModal">Approve</button>
-                    </div>
-                    <div><b>Channel: </b>ashish chanchlani vines</div>
-                    <div><b>View Count: </b>6479038</div>
-                </div>
-            </li> -->
         </ul>
     </div>
 
@@ -197,6 +135,30 @@
         </div>
     </div>
 
+    <!-- Injestion Pipeline Modal -->
+    <div class="modal fade" id="injesion-pipeline-modal" tabindex="-1" role="dialog"
+        aria-labelledby="injestion-pipeline-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Are you sure you want to run the Injestion Pipeline?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover" id="injestion-pipeline-table">
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btn-start-injestion-pipeline">Start
+                        Pipeline</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Logout Modal -->
     <div class="modal fade" id="logout-modal" tabindex="-1" role="dialog" aria-labelledby="logout-modal-label"
         aria-hidden="true">
@@ -215,6 +177,7 @@
             </div>
         </div>
     </div>
+
 </body>
 
 </html>
