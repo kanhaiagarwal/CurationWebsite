@@ -366,7 +366,7 @@ $(document).ready(function () {
                 'data-target': '#youtubeModal',
                 'data-video-id': videoItem['id']
             }).addClass('media-heading').html(videoItem['title']).val(videoItem['id'])
-            var publishDateSpan = $('<span />').append($('<b />').html('Publish Date: ')).append(videoItem['publishedAt'])
+            var publishDateSpan = $('<span />').append($('<b />').html('Publish Date: ')).append(getDateFromTimestamp(videoItem['publishedAt']))
             var approveBtn = $('<button />', {
                 'data-toggle': 'modal',
                 'data-target': '#approveVideoModal',
@@ -377,8 +377,8 @@ $(document).ready(function () {
                 'data-target': '#removeVideoModal',
                 'data-video-id': videoItem['id']
             }).addClass('btn btn-danger reject-video').html('Reject').val(videoItem['id'])
-            var channelDiv = $('<div />').append($('<b />').html('Channel: ')).append(videoItem['channelId'])
-            var viewCountDiv = $('<div />').append($('<b />').html('View Count: ')).append(videoItem['viewCount'])
+            var channelDiv = $('<div />').append($('<b />').html('Channel: ')).append(channelsCatalogue[videoItem['channelId']]['title'])
+            var viewCountDiv = $('<div />').append($('<b />').html('View Count: ')).append(getDisplayViewCount(videoItem['viewCount']))
             var listBodyDiv = $('<div />').addClass('media-body video-body')
                 .append(titleHeading).append(publishDateSpan).append(rejectBtn).append(approveBtn)
                 .append(channelDiv).append(viewCountDiv)
@@ -434,5 +434,19 @@ $(document).ready(function () {
             $('#channels-dropdown-button').text('##No Channel Filter')
             populateVideosInListView(selectedCategory, true)
         })
+    }
+
+    function getDateFromTimestamp(timestamp) {
+        return String(new Date(timestamp).getDate()) + "/" + String(new Date(timestamp).getMonth()) + "/" + String(new Date(timestamp).getFullYear())
+    }
+
+    function getDisplayViewCount(viewCount) {
+        if (viewCount / 1000000 > 0) {
+            return String(Math.round(viewCount / 1000000)) + "M"
+        } else if (viewCount / 1000 > 0) {
+            return String(Math.round(viewCount / 1000)) + "K"
+        } else {
+            return String(viewCount)
+        }
     }
 })
