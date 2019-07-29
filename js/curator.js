@@ -441,10 +441,10 @@ $(document).ready(function () {
     }
 
     function getDisplayViewCount(viewCount) {
-        if (viewCount / 1000000 > 0) {
-            return String(Math.round(viewCount / 1000000)) + "M"
-        } else if (viewCount / 1000 > 0) {
-            return String(Math.round(viewCount / 1000)) + "K"
+        if (parseInt(viewCount) / 1000000 >= 1) {
+            return String(Math.round(parseInt(viewCount) / 1000000)) + "M"
+        } else if (parseInt(viewCount) / 1000 >= 1) {
+            return String(Math.round(parseInt(viewCount) / 1000)) + "K"
         } else {
             return String(viewCount)
         }
