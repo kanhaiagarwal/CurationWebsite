@@ -18,21 +18,29 @@ $(document).ready(function () {
     var selectedCategory = 'STANDUPS'
     var videosCatalogue = {}, channelsCatalogue = {}
     var videos = {
-        STANDUPS: [], DESI: [], TRAILERS: [], FUNNY: [], CHILL: [], ANIMATION: [], EXPLORE: [], TRIPPY: [], LEARN: [],
-        SPORTS: [], LIFESTYLE: [], FITNESS: [], FILMLET: [], MEMES: []
+        STANDUPS: { 'list': [], nextToken: undefined }, DESI: { 'list': [], nextToken: undefined }, TRAILERS: { 'list': [], nextToken: undefined },
+        FUNNY: { 'list': [], nextToken: undefined }, CHILL: { 'list': [], nextToken: undefined }, ANIMATION: { 'list': [], nextToken: undefined },
+        EXPLORE: { 'list': [], nextToken: undefined }, TRIPPY: { 'list': [], nextToken: undefined }, LEARN: { 'list': [], nextToken: undefined },
+        SPORTS: { 'list': [], nextToken: undefined }, LIFESTYLE: { 'list': [], nextToken: undefined }, FITNESS: { 'list': [], nextToken: undefined },
+        FILMLET: { 'list': [], nextToken: undefined }, MEMES: { 'list': [], nextToken: undefined }, BAKCHODI: { 'list': [], nextToken: undefined },
+        EXTREME_SPORTS: { 'list': [], nextToken: undefined }, CRICKET: { 'list': [], nextToken: undefined }, FOOTBALL: { 'list': [], nextToken: undefined },
+        FOOD: { 'list': [], nextToken: undefined }, LUXURY: { 'list': [], nextToken: undefined }, ODDLY_SATISFYING: { 'list': [], nextToken: undefined },
+        ART: { 'list': [], nextToken: undefined }, HISTORY: { 'list': [], nextToken: undefined }, CUTIE_PIE: { 'list': [], nextToken: undefined }
     }
 
     var channels = {
         STANDUPS: [], DESI: [], TRAILERS: [], FUNNY: [], CHILL: [], ANIMATION: [], EXPLORE: [], TRIPPY: [], LEARN: [],
-        SPORTS: [], LIFESTYLE: [], FITNESS: [], FILMLET: [], MEMES: []
+        SPORTS: [], LIFESTYLE: [], FITNESS: [], FILMLET: [], MEMES: [], BAKCHODI: [], EXTREME_SPORTS: [], CRICKET: [],
+        FOOTBALL: [], FOOD: [], LUXURY: [], ODDLY_SATISFYING: [], ART: [], HISTORY: [], CUTIE_PIE: []
     }
 
     var categories = {
         STANDUPS: 2, DESI: 3, TRAILERS: 4, FUNNY: 5, CHILL: 6, ANIMATION: 7, EXPLORE: 8, TRIPPY: 9, LEARN: 10, SPORTS: 11,
-        LIFESTYLE: 12, FITNESS: 13, FILMLET: 14, MEMES: 15
+        LIFESTYLE: 12, FITNESS: 13, FILMLET: 14, MEMES: 15, BAKCHODI: 16, EXTREME_SPORTS: 17, CRICKET: 18, FOOTBALL: 19, FOOD: 20,
+        LUXURY: 21, ODDLY_SATISFYING: 22, ART: 23, HISTORY: 24, CUTIE_PIE: 25
     }
 
-    var languages = ['HINDI', 'ENGLISH']
+    var languages = ['HINDI', 'ENGLISH', 'ALL']
 
     Object.keys(categories).forEach(function (category, index) {
         if (index == 0) {
@@ -52,7 +60,7 @@ $(document).ready(function () {
             console.log("event.target.value in category click:", event.target.value)
             selectedCategory = event.target.value
             var currentCategory = event.target.value
-            if (videos[currentCategory].length == 0) {
+            if (videos[currentCategory]['list'].length == 0) {
                 getCuratedVideosFromRemote(selectedCategory)
             } else {
                 populateVideosInListView(selectedCategory, true)
@@ -70,13 +78,38 @@ $(document).ready(function () {
         )
     })
 
-    function getCuratedVideosFromRemote(category) {
-        var categoryToFetch = category
+    /** Event on scrolling to the bottom of the page. */
+    $(window).scroll(function () {
+        if ($(window).scrollTop() + $(window).height() > $(document).height() - 1
+            && $('#category-dropdown-items').is(':hidden')) {
+            if (videos[selectedCategory] && videos[selectedCategory]['nextToken']) {
+                getCuratedVideosFromRemote(
+                    selectedCategory,
+                    videos[selectedCategory]['nextToken']
+                )
+            }
+        }
+    });
+
+    function getCuratedVideosFromRemote(category, nextToken) {
+        var categoryToFetch = category, fetchUrl
         if (!categoryToFetch) {
             categoryToFetch = selectedCategory
         }
+
+        if (nextToken) {
+            fetchUrl = '/getcuratedvideos?category=' + categories[categoryToFetch] + '&nextToken=' + nextToken
+        } else {
+            fetchUrl = apiUrl + '/getcuratedvideos?category=' + categories[categoryToFetch]
+        }
+
+        // Check if the loading modal is already open.
+        if (!$('#loading-modal').hasClass('in')) {
+            $('#loading-modal').modal('show')
+        }
+
         $.ajax({
-            url: apiUrl + '/getcuratedvideos?category=' + categories[categoryToFetch],
+            url: fetchUrl,
             type: 'GET',
             dataType: 'json',
             contentType: 'application/json',
@@ -91,19 +124,28 @@ $(document).ready(function () {
                         console.log("channelIndex:", channelIndex)
                         addChannelInChannelsMap(data.result.channels[channelIndex], categoryToFetch)
                     }
-                    videos[categoryToFetch] = data.result.videos
-                    channels[categoryToFetch] = data.result.channels
 
-                    console.log(videosCatalogue)
-                    console.log(channelsCatalogue)
+                    for (var itemIndex = 0; itemIndex < data.result.videos.length; itemIndex++) {
+                        videos[categoryToFetch]['list'].push(data.result.videos[itemIndex])
+                    }
+
+                    channels[categoryToFetch] = data.result.channels
+                    videos[categoryToFetch]['nextToken'] = data.result.nextToken
                 } else {
                     console.log("No videos present for the selected category.")
-                    alert("Sorry, no videos present for tis category. Please select another category.")
                 }
 
-                populateVideosInListView(categoryToFetch, true)
+                if (categoryToFetch == selectedCategory) {
+                    populateVideosInListView(categoryToFetch, true)
+                }
+                setTimeout(function () {
+                    $('#loading-modal').modal('hide')
+                }, 500)
             },
             error: function (error) {
+                setTimeout(function () {
+                    $('#loading-modal').modal('hide')
+                }, 500)
                 alert("Please reload the page.")
             }
         })
@@ -111,13 +153,31 @@ $(document).ready(function () {
 
     function addVideoInVideosMap(videoItem, category) {
         if (!videosCatalogue[videoItem['id']]) {
+            videoItem['categories'] = []
+            videoItem['categories'].push(category)
             videosCatalogue[videoItem['id']] = videoItem
+        } else if (videosCatalogue[videoItem['id']] && videosCatalogue[videoItem['id']]['categories']
+            && videosCatalogue[videoItem['id']]['categories'].indexOf(category) < 0) {
+            videosCatalogue[videoItem['id']]['categories'].push(category)
+
+        } else if (videosCatalogue[videoItem['id']] && !videosCatalogue[videoItem['id']]['categories']) {
+            videosCatalogue[videoItem['id']]['categories'] = []
+            videosCatalogue[videoItem['id']]['categories'].push(category)
         }
     }
 
     function addChannelInChannelsMap(channelItem, category) {
         if (!channelsCatalogue[channelItem['id']]) {
+            channelItem['categories'] = []
+            channelItem['categories'].push(category)
             channelsCatalogue[channelItem['id']] = channelItem
+        } else if (channelsCatalogue[channelItem['id']] && channelsCatalogue[channelItem['id']]['categories']
+            && channelsCatalogue[channelItem['id']]['categories'].indexOf(category) < 0) {
+            channelsCatalogue[channelItem['id']]['categories'].push(category)
+
+        } else if (channelsCatalogue[channelItem['id']] && !channelsCatalogue[channelItem['id']]['categories']) {
+            channelsCatalogue[channelItem['id']]['categories'] = []
+            channelsCatalogue[channelItem['id']]['categories'].push(category)
         }
     }
 
@@ -228,15 +288,16 @@ $(document).ready(function () {
             success: function (response) {
                 console.log("Response:", JSON.stringify(response))
                 console.log("response.statusCode:", response.statusCode)
+                console.log("response.result.modified:", response.result.modified)
                 console.log("response.result.added:", response.result.added)
-                if (response.statusCode == 200 && response.result && response.result.added) {
+                if (response.statusCode == 200 && response.result && (response.result.added || response.result.modified)) {
                     console.log("response added is true")
                     removeVideoFromAllCategories(videoIdInApproveModal)
                     populateVideosInListView(selectedCategory, true)
                 }
                 $('#approveVideoModal').modal('hide')
 
-                if (response.statusCode == 200 && response.result && response.result.added) {
+                if (response.statusCode == 200 && response.result && (response.result.added || response.result.modified)) {
                     $.toast({
                         title: "Video Approval Successful",
                         content: response.result.message,
@@ -272,7 +333,7 @@ $(document).ready(function () {
         console.log("selectedlanguage:", $('#approve-language-dropdown-button').data('selectedLanguage'))
 
         $.post({
-            url: apiUrl + '/deletefromuncuratedlist',
+            url: apiUrl + '/deletefromcuratedlist',
             dataType: 'json',
             contentType: 'application/json',
             crossDomain: true,
@@ -378,15 +439,17 @@ $(document).ready(function () {
         console.log("videosCatalogue in removeVideoFromAllCategories:", videosCatalogue)
         console.log("videosCatalogue[videoId] in removeVideoFromAllCategories:", videosCatalogue[videoId])
 
-        var categories = videosCatalogue[videoId]['categories']
+        var removeCategories = videosCatalogue[videoId]['categories']
 
-        if (categories && categories.length > 0) {
-            categories.forEach(function (category) {
+        console.log("removeCategories:", removeCategories)
+
+        if (removeCategories && removeCategories.length > 0) {
+            removeCategories.forEach(function (category) {
                 console.log("category of", videoId, "is:", category)
-                if (videos[category] && videos[category].length > 0) {
-                    for (var videoIndex = 0; videoIndex < videos[category].length; videoIndex++) {
-                        if (videos[category][videoIndex]['id'] == videoId) {
-                            videos[category].splice(videoIndex, 1)
+                if (videos[category] && videos[category]['list'] && videos[category]['list'].length > 0) {
+                    for (var videoIndex = 0; videoIndex < videos[category]['list'].length; videoIndex++) {
+                        if (videos[category]['list'][videoIndex]['id'] == videoId) {
+                            videos[category]['list'].splice(videoIndex, 1)
                             console.log("video", videoId, "removed from category", category)
                         }
                     }
@@ -404,7 +467,7 @@ $(document).ready(function () {
             $('.video-list').empty()
         }
 
-        categoryVideos = videos[category]
+        categoryVideos = videos[category]['list']
 
         for (var videoIndex = 0; videoIndex < categoryVideos.length; videoIndex++) {
             var videoItem = categoryVideos[videoIndex]

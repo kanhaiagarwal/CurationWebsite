@@ -18,23 +18,40 @@ $(document).ready(function () {
     }
 
     var selectedCategory = 'STANDUPS'
+    var selectedChannel = undefined
     var videosCatalogue = {}, channelsCatalogue = {}
+
     var videos = {
-        STANDUPS: [], DESI: [], TRAILERS: [], FUNNY: [], CHILL: [], ANIMATION: [], EXPLORE: [], TRIPPY: [], LEARN: [],
-        SPORTS: [], LIFESTYLE: [], FITNESS: [], FILMLET: [], MEMES: []
+        STANDUPS: { channels: {} }, DESI: { channels: {} }, TRAILERS: { channels: {} }, FUNNY: { channels: {} }, CHILL: { channels: {} }, ANIMATION: { channels: {} },
+        EXPLORE: { channels: {} }, TRIPPY: { channels: {} }, LEARN: { channels: {} }, SPORTS: { channels: {} }, LIFESTYLE: { channels: {} }, FITNESS: { channels: {} },
+        FILMLET: { channels: {} }, MEMES: { channels: {} }, BAKCHODI: { channels: {} }, EXTREME_SPORTS: { channels: {} }, CRICKET: { channels: {} }, FOOTBALL: { channels: {} },
+        FOOD: { channels: {} }, LUXURY: { channels: {} }, ODDLY_SATISFYING: { channels: {} }, ART: { channels: {} }, HISTORY: { channels: {} }, CUTIE_PIE: { channels: {} }
     }
 
     var channels = {
-        STANDUPS: [], DESI: [], TRAILERS: [], FUNNY: [], CHILL: [], ANIMATION: [], EXPLORE: [], TRIPPY: [], LEARN: [],
-        SPORTS: [], LIFESTYLE: [], FITNESS: [], FILMLET: [], MEMES: []
+        STANDUPS: { channels: [], nextToken: undefined }, DESI: { channels: [], nextToken: undefined }, TRAILERS: { channels: [], nextToken: undefined },
+        FUNNY: { channels: [], nextToken: undefined }, CHILL: { channels: [], nextToken: undefined }, ANIMATION: { channels: [], nextToken: undefined },
+        EXPLORE: { channels: [], nextToken: undefined }, TRIPPY: { channels: [], nextToken: undefined }, LEARN: { channels: [], nextToken: undefined },
+        SPORTS: { channels: [], nextToken: undefined }, LIFESTYLE: { channels: [], nextToken: undefined }, FITNESS: { channels: [], nextToken: undefined },
+        FILMLET: { channels: [], nextToken: undefined }, MEMES: { channels: [], nextToken: undefined }, BAKCHODI: { channels: [], nextToken: undefined },
+        EXTREME_SPORTS: { channels: [], nextToken: undefined }, CRICKET: { channels: [], nextToken: undefined }, FOOTBALL: { channels: [], nextToken: undefined },
+        FOOD: { channels: [], nextToken: undefined }, LUXURY: { channels: [], nextToken: undefined }, ODDLY_SATISFYING: { channels: [], nextToken: undefined },
+        ART: { channels: [], nextToken: undefined }, HISTORY: { channels: [], nextToken: undefined }, CUTIE_PIE: { channels: [], nextToken: undefined }
     }
 
-    const categories = {
+    var categories = {
         STANDUPS: 2, DESI: 3, TRAILERS: 4, FUNNY: 5, CHILL: 6, ANIMATION: 7, EXPLORE: 8, TRIPPY: 9, LEARN: 10, SPORTS: 11,
-        LIFESTYLE: 12, FITNESS: 13, FILMLET: 14, MEMES: 15
+        LIFESTYLE: 12, FITNESS: 13, FILMLET: 14, MEMES: 15, BAKCHODI: 16, EXTREME_SPORTS: 17, CRICKET: 18, FOOTBALL: 19, FOOD: 20,
+        LUXURY: 21, ODDLY_SATISFYING: 22, ART: 23, HISTORY: 24, CUTIE_PIE: 25
     }
 
-    var languages = ['HINDI', 'ENGLISH']
+    var allNextTokens = {
+        STANDUPS: undefined, DESI: undefined, TRAILERS: undefined, FUNNY: undefined, CHILL: undefined, ANIMATION: undefined, EXPLORE: undefined, TRIPPY: undefined, LEARN: undefined, SPORTS: undefined,
+        LIFESTYLE: undefined, FITNESS: undefined, FILMLET: undefined, MEMES: undefined, BAKCHODI: undefined, EXTREME_SPORTS: undefined, CRICKET: undefined, FOOTBALL: undefined, FOOD: undefined,
+        LUXURY: undefined, ODDLY_SATISFYING: undefined, ART: undefined, HISTORY: undefined, CUTIE_PIE: undefined
+    }
+
+    var languages = ['HINDI', 'ENGLISH', 'ALL']
 
     Object.keys(categories).forEach(function (category, index) {
         if (index == 0) {
@@ -54,11 +71,13 @@ $(document).ready(function () {
             console.log("event.target.value in category click:", event.target.value)
             selectedCategory = event.target.value
             let currentCategory = event.target.value
-            if (videos[currentCategory].length == 0) {
-                getUncuratedVideosFromRemote(selectedCategory)
+
+            $('.video-list').empty()
+
+            if (channels[currentCategory]['channels'].length == 0) {
+                getChannelsForCategory(currentCategory)
             } else {
-                populateVideosInListView(selectedCategory, true)
-                populateChannelsInDropdown(selectedCategory, true)
+                populateChannelsInDropdown(currentCategory, true)
             }
         })
     })
@@ -73,43 +92,141 @@ $(document).ready(function () {
         )
     })
 
-    function getUncuratedVideosFromRemote(category) {
-        let categoryToFetch = category
+    /** Event on scrolling to the bottom of the page. */
+    $(window).scroll(function () {
+        if ($(window).scrollTop() + $(window).height() > $(document).height() - 1
+            && $('#category-dropdown-items').is(':hidden') && $('#channels-dropdown-items').is(':hidden')) {
+            if (videos[selectedCategory]['channels'][selectedChannel] && videos[selectedCategory]['channels'][selectedChannel]['nextToken']) {
+                getUncuratedVideosForChannelAndCategoryFromRemote(
+                    selectedCategory,
+                    selectedChannel,
+                    videos[selectedCategory]['channels'][selectedChannel]['nextToken']
+                )
+            }
+        }
+    });
+
+    getChannelsForCategory(selectedCategory)
+
+    function getChannelsForCategory(category, nextToken) {
+
+        let categoryToFetch = category, fetchUrl
+
+        // Check if the loading modal is already open.
+        if (!$('#loading-modal').hasClass('in')) {
+            $('#loading-modal').modal('show')
+        }
+
         if (!categoryToFetch) {
             categoryToFetch = selectedCategory
         }
+
+        fetchUrl = apiUrl + '/getallchannelsbycategory?category=' + categories[categoryToFetch]
+
+        if (nextToken) {
+            fetchUrl = fetchUrl + '&nextToken=' + nextToken
+        }
+
         $.ajax({
-            url: apiUrl + '/getuncuratedvideos?category=' + categories[categoryToFetch],
+            url: fetchUrl,
             type: 'GET',
             dataType: 'json',
             contentType: 'application/json',
             crossDomain: true,
             success: function (data) {
-                if (data && data.result && data.result.videos && data.result.videos.length > 0
-                    && data.result.channels && data.result.channels.length > 0 && data.result.videos[0] != null) {
-                    for (var videoIndex = 0; videoIndex < data.result.videos.length; videoIndex++) {
-                        console.log("videoIndex:", videoIndex)
-                        addVideoInVideosMap(data.result.videos[videoIndex], categoryToFetch)
-                    }
+                if (data && data.result && data.result.channels && data.result.channels.length > 0 && data.result.channels[0]) {
                     for (var channelIndex = 0; channelIndex < data.result.channels.length; channelIndex++) {
-                        console.log("channelIndex:", channelIndex)
+                        channels[categoryToFetch]['channels'].push(data.result.channels[channelIndex])
+                        if (!videos[categoryToFetch]['channels'][data.result.channels[channelIndex]['id']]) {
+                            videos[categoryToFetch]['channels'][data.result.channels[channelIndex]['id']] = { 'list': [], nextToken: undefined }
+                        }
                         addChannelInChannelsMap(data.result.channels[channelIndex], categoryToFetch)
                     }
-                    videos[categoryToFetch] = data.result.videos
-                    channels[categoryToFetch] = data.result.channels
-
-                    console.log(videosCatalogue)
-                    console.log(channelsCatalogue)
-                } else {
-                    console.log("No videos present for the selected category.")
-                    alert("Sorry, no videos present for tis category. Please select another category.")
                 }
 
-                populateVideosInListView(categoryToFetch, true)
-                populateChannelsInDropdown(categoryToFetch, true)
+                if (data && data.result && data.result.nextToken) {
+                    getChannelsForCategory(categoryToFetch, data.result.nextToken)
+                } else {
+                    console.log("nextToken is not present.")
+                    populateChannelsInDropdown(category, true)
+                    setTimeout(function () {
+                        $('#loading-modal').modal('hide')
+                    }, 500)
+                }
+            }, error: function (error) {
+                setTimeout(function () {
+                    $('#loading-modal').modal('hide')
+                }, 500)
+                alert("Error in a query. Please reload the page.")
+            }
+        })
+    }
+
+    function getUncuratedVideosForChannelAndCategoryFromRemote(category, channelId, nextToken) {
+        let categoryToFetch = category, channelToFetch = channelId, fetchUrl
+        if (!categoryToFetch) {
+            categoryToFetch = selectedCategory
+        }
+        if (!channelToFetch) {
+            channelToFetch = channel
+        }
+        fetchUrl = apiUrl + '/getuncuratedvideosbycategoryandchannel?category=' + categories[categoryToFetch] + '&channelId=' + channelToFetch
+        if (nextToken) {
+            fetchUrl = fetchUrl + '&nextToken=' + nextToken
+        }
+        if (!$('#loading-modal').hasClass('in')) {
+            $('#loading-modal').modal('show')
+        }
+        $.ajax({
+            url: fetchUrl,
+            type: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            crossDomain: true,
+            success: function (data) {
+                console.log("data:", data)
+
+                if (data && data.result && data.result.videos && data.result.videos.length > 0 && data.result.videos[0]) {
+                    let videosFetched = data.result.videos
+
+                    if (!videos[categoryToFetch]['channels'][channelId]) {
+                        videos[categoryToFetch]['channels'][channelId] = {}
+                        videos[categoryToFetch]['channels'][channelId]['list'] = []
+                        videos[categoryToFetch]['channels'][channelId]['nextToken'] = undefined
+                    }
+
+                    if (!videos[categoryToFetch]['channels'][channelId]['list']) {
+                        videos[categoryToFetch]['channels'][channelId]['list'] = []
+                    }
+
+                    if (!videos[categoryToFetch]['channels'][channelId]['nextToken']) {
+                        videos[categoryToFetch]['channels'][channelId]['nextToken'] = undefined
+                    }
+
+                    for (var videoIndex = 0; videoIndex < videosFetched.length; videoIndex++) {
+                        videos[categoryToFetch]['channels'][channelId]['list'].push(videosFetched[videoIndex])
+                        addVideoInVideosMap(videosFetched[videoIndex], categoryToFetch)
+                    }
+
+                    if (data.result.nextToken) {
+                        videos[categoryToFetch]['channels'][channelId]['nextToken'] = data.result.nextToken
+                    } else {
+                        videos[categoryToFetch]['channels'][channelId]['nextToken'] = undefined
+                    }
+                }
+
+                populateVideosInListView(categoryToFetch, channelToFetch, true)
+
+                setTimeout(function () {
+                    $('#loading-modal').modal('hide')
+                }, 500)
             },
             error: function (error) {
-                alert("Please reload the page.")
+                console.log("Error in fetching the videos for the category and channel.")
+                setTimeout(function () {
+                    $('#loading-modal').modal('hide')
+                }, 500)
+                alert("please reload the page")
             }
         })
     }
@@ -144,7 +261,7 @@ $(document).ready(function () {
         }
     }
 
-    getUncuratedVideosFromRemote()
+    // getUncuratedVideosFromRemote()
 
     $('#category-dropdown-items a').click(function (event) {
         $('#category-dropdown-button').text(event.target.value)
@@ -207,7 +324,7 @@ $(document).ready(function () {
                 'channelId': getChannelIdForVideo($(this).data('video-id'), selectedCategory),
                 'category': categories[$('#approve-category-dropdown-button').data('selectedCategory')],
                 'language': $('#approve-language-dropdown-button').data('selectedLanguage'),
-                'userCurated': $.session('fosho_username')
+                'userCurated': $.session.get('fosho_username')
             }),
             success: function (response) {
                 console.log("Response:", JSON.stringify(response))
@@ -216,8 +333,7 @@ $(document).ready(function () {
                 if (response.statusCode == 200 && response.result && response.result.added) {
                     console.log("response added is true")
                     removeVideoFromAllCategories(videoIdInApproveModal)
-                    populateVideosInListView(selectedCategory, true)
-                    populateChannelsInDropdown(selectedCategory, true)
+                    populateVideosInListView(selectedCategory, selectedChannel, true)
                 }
                 $('#approveVideoModal').modal('hide')
 
@@ -251,9 +367,6 @@ $(document).ready(function () {
 
     $('#btn-reject-modal-reject-video').click(function (event) {
         var videoIdInRejectModal = $(this).data('video-id')
-        console.log("$(this).data('video-id'):", $(this).data('video-id'))
-        console.log("selectedCategory:", $('#approve-category-dropdown-button').data('selectedCategory'))
-        console.log("selectedlanguage:", $('#approve-language-dropdown-button').data('selectedLanguage'))
 
         $.post({
             url: apiUrl + '/deletefromuncuratedlist',
@@ -271,8 +384,7 @@ $(document).ready(function () {
                 if (response.statusCode == 200 && response.result && response.result.deleted) {
                     console.log("response deleted is true")
                     removeVideoFromAllCategories(videoIdInRejectModal)
-                    populateVideosInListView(selectedCategory, true)
-                    populateChannelsInDropdown(selectedCategory, true)
+                    populateVideosInListView(selectedCategory, selectedChannel, true)
                 }
                 $('#removeVideoModal').modal('hide')
                 if (response.statusCode == 200 && response.result && response.result.deleted) {
@@ -313,19 +425,19 @@ $(document).ready(function () {
     }
 
     function removeVideoFromAllCategories(videoId) {
-        console.log("videoId in removeVideoFromAllCategories:", videoId)
-        console.log("videosCatalogue in removeVideoFromAllCategories:", videosCatalogue)
-        console.log("videosCatalogue[videoId] in removeVideoFromAllCategories:", videosCatalogue[videoId])
 
-        var categories = videosCatalogue[videoId]['categories']
+        var removeCategories = videosCatalogue[videoId]['categories']
+        var channelId = videosCatalogue[videoId]['channelId']
 
-        if (categories && categories.length > 0) {
-            categories.forEach(function (category) {
-                console.log("category of", videoId, "is:", category)
-                if (videos[category] && videos[category].length > 0) {
-                    for (var videoIndex = 0; videoIndex < videos[category].length; videoIndex++) {
-                        if (videos[category][videoIndex]['id'] == videoId) {
-                            videos[category].splice(videoIndex, 1)
+        if (removeCategories && removeCategories.length > 0) {
+            removeCategories.forEach(function (category) {
+                if (videos[category] && videos[category]['channels'] && videos[category]['channels'][channelId]
+                    && videos[category]['channels'][channelId]['list'] && videos[category]['channels'][channelId]['list'].length > 0) {
+                    for (var videoIndex = 0; videoIndex < videos[category]['channels'][channelId]['list'].length; videoIndex++) {
+                        console.log("video:", videos[category]['channels'][channelId]['list'][videoIndex])
+                        if (videos[category]['channels'][channelId]['list'][videoIndex]['id'] == videoId) {
+                            console.log("found the videoid inside the videos")
+                            videos[category]['channels'][channelId]['list'].splice(videoIndex, 1)
                             console.log("video", videoId, "removed from category", category)
                         }
                     }
@@ -336,19 +448,17 @@ $(document).ready(function () {
         delete videosCatalogue[videoId]
     }
 
-    function populateVideosInListView(category, removeAllElements, channelFilter) {
+    function populateVideosInListView(category, channelFilter, removeAllElements) {
+        console.log('inside populateVideosInListView')
 
         var categoryVideos
         if (removeAllElements) {
             $('.video-list').empty()
         }
 
-        if (channelFilter) {
-            categoryVideos = getVideosWithChannelFilter(category, channelFilter)
-        } else {
-            categoryVideos = videos[category]
-        }
+        categoryVideos = getVideosWithChannelFilter(category, channelFilter)
 
+        console.log("categoryVideos:", categoryVideos)
         for (var videoIndex = 0; videoIndex < categoryVideos.length; videoIndex++) {
             var videoItem = categoryVideos[videoIndex]
             var thumbnailImage = $('<img />', {
@@ -388,27 +498,18 @@ $(document).ready(function () {
     }
 
     function getVideosWithChannelFilter(category, channelFilter) {
-        var allCategoryVideos = videos[category]
-        var filteredVideos = []
-
-        for (var videoIndex = 0; videoIndex < allCategoryVideos.length; videoIndex++) {
-            if (allCategoryVideos[videoIndex]['channelId'] == channelFilter) {
-                filteredVideos.push(allCategoryVideos[videoIndex])
-            }
-        }
-
-        return filteredVideos
+        return videos[category]['channels'][channelFilter]['list']
     }
 
     function populateChannelsInDropdown(category, removeAllElements) {
 
-        var categoryChannels = channels[category]
+        var categoryChannels = channels[category]['channels']
 
         if (removeAllElements) {
             $('#channels-dropdown-items').empty()
-            $('#channels-dropdown-items').append($('<a />').val('no-selection').attr('id', 'channel-no-selection').text('##No Channel Filter'))
+            $('#channels-dropdown-items').append($('<a />').val('no-selection').attr('id', 'channel-no-selection').text('##Select A Channel'))
             $('#channels-dropdown-items').append($('<div />').addClass('dropdown-divider'))
-            $('#channels-dropdown-button').text('##No Channel Filter')
+            $('#channels-dropdown-button').text('##Select A Channel')
         }
 
         for (var channelIndex = 0; channelIndex < categoryChannels.length; channelIndex++) {
@@ -420,19 +521,30 @@ $(document).ready(function () {
                 $('#channels-dropdown-button').text(channelTitle)
             }
 
+            if (!videos[category]['channels'][channelId]) {
+                videos[category]['channels'][channelId] = {}
+                videos[category]['channels'][channelId]['list'] = []
+                videos[category]['channels'][channelId]['nextToken'] = undefined
+            }
+
             $('#channels-dropdown-items')
                 .append($('<a>').val(channelId).text(channelTitle).addClass('dropdown-item').attr('id', 'channel-' + channelId))
                 .attr('data-channel-name', channelTitle)
 
             $('#channel-' + channelId).click(function (event) {
                 $('#channels-dropdown-button').text(event.target.text)
-                populateVideosInListView(selectedCategory, true, event.target.value)
+                selectedChannel = event.target.value
+                if (videos[selectedCategory]['channels'][selectedChannel]['list'] && videos[selectedCategory]['channels'][selectedChannel]['list'].length > 0) {
+                    populateVideosInListView(selectedCategory, event.target.value, true)
+                } else {
+                    getUncuratedVideosForChannelAndCategoryFromRemote(selectedCategory, selectedChannel)
+                }
             })
         }
 
         $('#channel-no-selection').click(function () {
-            $('#channels-dropdown-button').text('##No Channel Filter')
-            populateVideosInListView(selectedCategory, true)
+            $('#channels-dropdown-button').text('##Select A Channel')
+            $('.video-list').empty()
         })
     }
 

@@ -108,8 +108,8 @@
                     <!-- Language Dropdown in the Approve Modal -->
                     <span class="dropdown approve-dropdown">
                         <button class="btn btn-primary dropdown-toggle" type="button"
-                            id="approve-language-dropdown-button" data-toggle="dropdown" aria-haspopup="true"
-                            aria-expanded="false">
+                            id="approve-language-dropdown-button" data-toggle="dropdown" data-boundary=""
+                            aria-haspopup="true" aria-expanded="false">
                         </button>
                         <div class="dropdown-menu" id="approve-language-dropdown-items"
                             aria-labelledby="dropdownMenuButton"></div>
@@ -118,8 +118,8 @@
                     <!-- Category Dropdown in the Approve Modal -->
                     <span class="dropdown approve-dropdown">
                         <button class="btn btn-secondary dropdown-toggle" type="button"
-                            id="approve-category-dropdown-button" data-toggle="dropdown" aria-haspopup="true"
-                            aria-expanded="false">
+                            id="approve-category-dropdown-button" data-toggle="dropdown" data-boundary=""
+                            aria-haspopup="true" aria-expanded="false">
                         </button>
                         <div class="dropdown-menu" id="approve-category-dropdown-items"
                             aria-labelledby="dropdownMenuButton"></div>
@@ -178,6 +178,17 @@
         </div>
     </div>
 
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loading-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        aria-hidden="true" data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">Please Wait ....</h5>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
